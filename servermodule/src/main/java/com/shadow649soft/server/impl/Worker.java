@@ -11,7 +11,11 @@ import com.shadow649soft.server.api.application.ApplicationContext;
 import com.shadow649soft.server.api.request.RequestParser;
 import com.shadow649soft.server.api.request.ServerRequest.Status;
 import com.shadow649soft.server.impl.application.ApplicationException;
-
+/**
+ * This class have the responsibility to serve client request
+ * @author Emanuele Lombardi
+ *
+ */
 public class Worker implements Runnable{
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
     private static Object guard = new Object();

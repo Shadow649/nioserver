@@ -14,7 +14,13 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.shadow649soft.server.api.application.ApplicationContext;
 import com.shadow649soft.server.api.request.RequestParser;
-
+/**
+ * This class store the request parsers that are waiting to be served
+ * I used this class instead of SelectionKey.attach() to avoid GCML
+ * http://jfarcand.wordpress.com/?s=Tricks+and+Tips+with+NIO+part+II%3A+Why+SelectionKey.attach%28%29+is+evil 
+ * @author Emanuele Lombardi
+ *
+ */
 public class RequestParserStorage {
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -33,7 +39,7 @@ public class RequestParserStorage {
         if(ctx.requestCanExpire()) {
         final Cache<SelectionKey, RequestParser> cache = CacheBuilder.newBuilder()
                 .concurrencyLevel(1).weakKeys().expireAfterWrite(ctx.requestExpiresTime(), TimeUnit.SECONDS)
-                .removalListener(ctx.getExpiresAction())
+                .removalListener(ctx.expireAction())
                 .build();
         this.key2RpStorage = cache.asMap();
         Timer timer = new Timer(true);

@@ -2,7 +2,11 @@ package com.shadow649soft.server.api.server;
 
 import com.shadow649soft.server.api.configuration.ApplicationConfigurator;
 import com.shadow649soft.server.api.configuration.ServerConfiguration;
-
+/**
+ * 
+ * @author Emanuele Lombardi
+ *
+ */
 public interface Server {
     
     public static enum Status

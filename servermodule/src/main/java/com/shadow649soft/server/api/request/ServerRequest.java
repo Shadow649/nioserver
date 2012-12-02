@@ -1,5 +1,11 @@
 package com.shadow649soft.server.api.request;
 
+/**
+ * 
+ * @author Emanuele Lombardi
+ *
+ * @param <T> Type of response message interpretable by application
+ */
 public interface ServerRequest<T> {
     
     public static enum Status

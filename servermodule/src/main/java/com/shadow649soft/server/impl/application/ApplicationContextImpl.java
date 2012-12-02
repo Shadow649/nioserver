@@ -12,6 +12,11 @@ import com.shadow649soft.server.api.request.RequestParser;
 import com.shadow649soft.server.api.response.ResponseBufferStorage;
 import com.shadow649soft.server.impl.request.RequestParserStorage;
 
+/**
+ * Common Application context method
+ * @author Emanuele Lombardi
+ *
+ */
 public abstract class ApplicationContextImpl implements ApplicationContext{
 
     protected Application application;

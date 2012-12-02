@@ -10,13 +10,14 @@ import com.shadow649soft.server.api.request.ServerRequest.Status;
 import com.shadow649soft.server.api.response.Response;
 import com.shadow649soft.server.api.response.ResponseBufferStorage;
 
+/**
+ * Common application operation
+ * @author Emanuele Lombardi
+ *
+ */
 public abstract class AbstractApplication implements Application {
     protected ServerRequest<?> request;
 
-
-    public boolean onDataReceived() {
-        return false;
-    }
 
     public void notifyReceivedData(SelectionKey key) throws ApplicationException {
         if(request == null) {

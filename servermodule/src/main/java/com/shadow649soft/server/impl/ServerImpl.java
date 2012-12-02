@@ -5,7 +5,11 @@ import com.shadow649soft.server.api.configuration.ApplicationConfigurator;
 import com.shadow649soft.server.api.configuration.ServerConfiguration;
 import com.shadow649soft.server.api.server.IOHandler;
 import com.shadow649soft.server.api.server.Server;
-
+/**
+ * 
+ * @author Emanuele Lombardi
+ *
+ */
 public class ServerImpl implements Server{
     
     private IOHandler ioHandler;

@@ -1,6 +1,7 @@
 package com.shadow649soft.server.impl;
 
 import static java.nio.ByteBuffer.allocate;
+import static com.shadow649soft.server.api.request.ServerRequest.Status.*;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -26,7 +27,11 @@ import com.shadow649soft.server.api.response.ResponseBufferStorage;
 import com.shadow649soft.server.api.server.IOHandler;
 import com.shadow649soft.server.api.server.Server;
 import com.shadow649soft.server.api.server.Server.Status;
-
+/**
+ * 
+ * @author Emanuele Lombardi
+ *
+ */
 public class IoHandlerImpl implements IOHandler {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
@@ -168,7 +173,7 @@ public class IoHandlerImpl implements IOHandler {
             logger.info("removed key "+ key.hashCode());
             return;
         }
-        if(count > 0) {
+        if(count > 0 && (ctx.getRequestParser(key).getRequest().getStatus() == Dummy || ctx.getRequestParser(key).getRequest().getStatus() == Accepted)) {
             Worker worker = new Worker(key, ctx);
             worker.notifyDataReceived(data);
             workerExecutor.execute(worker);

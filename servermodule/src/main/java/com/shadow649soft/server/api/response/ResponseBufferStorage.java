@@ -7,6 +7,13 @@ import java.nio.channels.SelectionKey;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * This Class store the buffers that are waiting to be written
+ * I used this class instead of SelectionKey.attach() to avoid GCML
+ * http://jfarcand.wordpress.com/?s=Tricks+and+Tips+with+NIO+part+II%3A+Why+SelectionKey.attach%28%29+is+evil 
+ * @author Emanuele Lombardi
+ *
+ */
 public class ResponseBufferStorage {
     
     public static final ByteBuffer EOM = allocate( 0 );
