@@ -1,1 +1,36 @@
 This is a simple implementation of a MT server using java NIO
+The idea is to build a pluggable server who can serve different type of application.
+There are two module
+1) httpmodule contains a raw implementation of a http server. It accept only get method server by a FileBased resource finder. But it's possible to implement a different type of resourcefinder.
+
+2) echomodule contains a simple echoserver.
+
+Instruction to build
+From parent type mvn clean package
+
+Instruction to start applications
+1)Httpserver after package (or install) you can start the server by typing 
+java -jar httpmodule/target/http-0.0.1-SNAPSHOT.jar [port]
+or better
+sh httpmodule/target/appassembler/bin/server [port]
+
+2)Echoserver the same
+java -jar echomodule/target/echomodule-0.0.1-SNAPSHOT.jar [port]
+sh echomodule/target/appassembler/bin/echoserver [port]
+
+Instruction for usage
+1)Httpserver have a preconfigured set of resources you can add simply typing in your browser http://127.0.0.1:8080/
+The root directory is httpmodule/root/
+
+2)Echoserver can be tested with any client capable to open a socket write and read it.
+for example telnet 127.0.0.1 8080
+type you message followed by "end"
+
+This is a prototype and it lacks:
+proper logging configuration
+is not configurable now are hardcoded with default configuration
+cache
+support of cookies ecc ecc
+
+
+
