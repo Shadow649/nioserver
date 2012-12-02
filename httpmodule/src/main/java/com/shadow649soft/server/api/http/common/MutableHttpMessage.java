@@ -4,6 +4,11 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Queue;
 
+/**
+ * 
+ * @author Emanuele Lombardi
+ *
+ */
 public interface MutableHttpMessage extends HttpMessage {
 
     void setVersion(HttpVersion version);

@@ -19,7 +19,11 @@ import com.shadow649soft.server.impl.http.request.HttpRequestParser;
 import com.shadow649soft.server.impl.http.response.HttpResponse;
 import com.shadow649soft.server.impl.http.response.HttpResponseMaker;
 import com.shadow649soft.server.impl.http.response.ResourceHandlerException;
-
+/**
+ * Http Application implementation
+ * @author Emanuele Lombardi
+ *
+ */
 public class HttpApplication extends AbstractApplication implements Application {
 
     private int keepAliveTimeOut;

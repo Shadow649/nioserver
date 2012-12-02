@@ -6,7 +6,11 @@ import com.shadow649soft.server.api.http.common.HttpResponseStatus;
 import com.shadow649soft.server.api.http.common.MutableHttpResponse;
 import com.shadow649soft.server.api.http.common.ResourceHandler;
 import com.shadow649soft.server.api.http.configuration.ResourceHandlerConfiguration;
-
+/**
+ * 
+ * @author Emanuele Lombardi
+ *
+ */
 public class ResponseFileHandler implements ResourceHandler<File> {
 
     private File rootDirectory;

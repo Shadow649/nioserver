@@ -1,6 +1,10 @@
 package com.shadow649soft.server.api.http.common;
 
-
+/**
+ * 
+ * @author Emanuele Lombardi
+ *
+ */
 public enum HttpVersion {
     /**
      * HTTP 1/1

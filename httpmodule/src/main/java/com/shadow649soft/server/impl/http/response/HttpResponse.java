@@ -8,7 +8,11 @@ import java.util.Queue;
 import java.util.Set;
 
 import com.shadow649soft.server.api.response.Response;
-
+/**
+ * Http response handled by server
+ * @author Emanuele Lombardi
+ *
+ */
 public class HttpResponse implements Response<HttpResponseMessage> {
     private HttpResponseMessage responseMessage;
     Charset charset = Charset.forName("UTF-8");

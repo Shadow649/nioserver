@@ -8,7 +8,11 @@ import com.shadow649soft.server.api.http.common.HttpVersion;
 import com.shadow649soft.server.api.http.common.MutableHttpResponse;
 import com.shadow649soft.server.impl.http.HttpMessage;
 import com.shadow649soft.server.impl.http.HttpUtils;
-
+/**
+ * 
+ * @author Emanuele Lombardi
+ *
+ */
 public class HttpResponseMessage extends HttpMessage implements MutableHttpResponse{
     
     /**

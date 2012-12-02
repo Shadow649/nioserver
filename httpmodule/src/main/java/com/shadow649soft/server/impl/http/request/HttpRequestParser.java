@@ -13,7 +13,11 @@ import com.shadow649soft.server.api.request.RequestParser;
 import com.shadow649soft.server.api.request.ServerRequest;
 import com.shadow649soft.server.api.request.ServerRequest.Status;
 import com.shadow649soft.server.impl.http.request.HttpRequestLineParser.ParserStatus;
-
+/**
+ * Request parser used by server
+ * @author Emanuele Lombardi
+ *
+ */
 public class HttpRequestParser implements RequestParser {
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 

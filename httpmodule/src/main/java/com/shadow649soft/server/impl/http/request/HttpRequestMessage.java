@@ -6,7 +6,11 @@ import java.util.Map;
 import com.shadow649soft.server.api.http.common.HttpMethod;
 import com.shadow649soft.server.api.http.common.HttpRequest;
 import com.shadow649soft.server.impl.http.HttpMessage;
-
+/**
+ * 
+ * @author Emanuele Lombardi
+ *
+ */
 public class HttpRequestMessage extends HttpMessage implements
         HttpRequest {
     

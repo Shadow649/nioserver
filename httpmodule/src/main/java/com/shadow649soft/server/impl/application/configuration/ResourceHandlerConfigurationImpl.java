@@ -1,7 +1,11 @@
 package com.shadow649soft.server.impl.application.configuration;
 
 import com.shadow649soft.server.api.http.configuration.MutableResourceHandlerConf;
-
+/**
+ * 
+ * @author Emanuele Lombardi
+ *
+ */
 public class ResourceHandlerConfigurationImpl implements MutableResourceHandlerConf {
     
     private String rootPath;

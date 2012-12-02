@@ -6,7 +6,11 @@ import java.util.Map;
 
 import com.shadow649soft.server.api.http.common.HttpMethod;
 import com.shadow649soft.server.api.http.common.MutableHttpRequest;
-
+/**
+ * 
+ * @author Emanuele Lombardi
+ *
+ */
 public class MutableHttpRequestMessage extends HttpRequestMessage implements
         MutableHttpRequest {
     

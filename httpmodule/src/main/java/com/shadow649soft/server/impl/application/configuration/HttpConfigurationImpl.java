@@ -2,7 +2,11 @@ package com.shadow649soft.server.impl.application.configuration;
 
 import com.shadow649soft.server.api.http.configuration.MutableHttpConfiguration;
 import com.shadow649soft.server.api.http.configuration.ResourceHandlerConfiguration;
-
+/**
+ * 
+ * @author Emanuele Lombardi
+ *
+ */
 public class HttpConfigurationImpl implements MutableHttpConfiguration {
     
     private boolean keepAlive;

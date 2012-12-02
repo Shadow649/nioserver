@@ -1,6 +1,11 @@
 package com.shadow649soft.server.api.http.common;
 
-
+/**
+ * Http status code 
+ * http://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-19
+ * @author Emanuele Lombardi
+ *
+ */
 public class HttpResponseStatus {
     
     /*   7.  Status Code Definitions  . . . . . . . . . . . . . . . . . . . 25

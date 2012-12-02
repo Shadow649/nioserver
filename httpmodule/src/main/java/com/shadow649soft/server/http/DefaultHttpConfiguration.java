@@ -12,7 +12,12 @@ import com.shadow649soft.server.api.http.configuration.MutableResourceHandlerCon
 import com.shadow649soft.server.impl.application.configuration.HttpConfigurationImpl;
 import com.shadow649soft.server.impl.application.configuration.ResourceHandlerConfigurationImpl;
 import com.shadow649soft.server.impl.application.http.HttpApplicationContext;
-
+/**
+ * This class give the default configurations
+ * Further implementations are certainly possibile
+ * @author Emanuele Lombardi
+ *
+ */
 public class DefaultHttpConfiguration {
     
     public static ServerConfiguration defaultConfiguration = new ServerConfiguration() {

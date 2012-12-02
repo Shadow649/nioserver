@@ -1,5 +1,10 @@
 package com.shadow649soft.server.api.http.common;
 
+/**
+ * Used http headers
+ * @author Emanuele Lombardi
+ *
+ */
 public interface Headers {
 
     static final String CONNECTION = "Connection";

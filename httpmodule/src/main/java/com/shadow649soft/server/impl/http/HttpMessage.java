@@ -11,7 +11,11 @@ import com.shadow649soft.server.api.http.common.Headers;
 import com.shadow649soft.server.api.http.common.HttpVersion;
 import com.shadow649soft.server.api.http.common.MutableHttpMessage;
 
-
+/**
+ * Implementation of HttpMessage
+ * @author Emanuele Lombardi
+ *
+ */
 
 public class HttpMessage implements MutableHttpMessage {
 

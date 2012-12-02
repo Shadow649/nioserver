@@ -18,7 +18,11 @@ import com.shadow649soft.server.api.http.common.HttpVersion;
 import com.shadow649soft.server.api.http.configuration.HttpConfiguration;
 import com.shadow649soft.server.impl.http.HttpUtils;
 import com.shadow649soft.server.impl.http.request.HttpRequestMessage;
-
+/**
+ * This class have the responsibility to make the httpreponse
+ * @author Emanuele Lombardi
+ *
+ */
 public class HttpResponseMaker {
     
     private ResponseFileHandler fileHandler;

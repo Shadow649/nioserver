@@ -6,7 +6,11 @@ import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.shadow649soft.server.api.http.configuration.HttpConfiguration;
 import com.shadow649soft.server.impl.application.ApplicationContextImpl;
-
+/**
+ * 
+ * @author Emanuele Lombardi
+ *
+ */
 public class HttpApplicationContext extends ApplicationContextImpl {
 
     public HttpApplicationContext(HttpConfiguration echoConf) {

@@ -1,6 +1,10 @@
 package com.shadow649soft.server.api.http.common;
 
-
+/**
+ * List of http method
+ * @author Emanuele Lombardi
+ *
+ */
 public enum HttpMethod {
 
 

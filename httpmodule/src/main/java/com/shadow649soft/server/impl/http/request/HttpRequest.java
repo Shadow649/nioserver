@@ -1,7 +1,11 @@
 package com.shadow649soft.server.impl.http.request;
 
 import com.shadow649soft.server.impl.request.AbstractRequest;
-
+/**
+ * Implementation of ServerRequest .This class Handle HttpRequestMessage
+ * @author Emanuele Lombardi
+ *
+ */
 public class HttpRequest extends AbstractRequest<HttpRequestMessage> {
     
     private HttpRequestMessage message;
