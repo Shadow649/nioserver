@@ -18,7 +18,6 @@
     <javac.src.version>1.6</javac.src.version>
     <javac.target.version>1.6</javac.target.version>
     <slf4j.version>1.6.4</slf4j.version>
-
   </properties>
 
   <dependencies>
