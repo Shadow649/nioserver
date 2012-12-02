@@ -6,6 +6,9 @@ import java.net.SocketException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.shadow649soft.server.api.application.Application;
 import com.shadow649soft.server.api.http.common.HttpVersion;
 import com.shadow649soft.server.api.http.configuration.HttpConfiguration;
@@ -25,6 +28,7 @@ import com.shadow649soft.server.impl.http.response.ResourceHandlerException;
  *
  */
 public class HttpApplication extends AbstractApplication implements Application {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
     private int keepAliveTimeOut;
     private boolean enableKeepAlive;
@@ -36,7 +40,7 @@ public class HttpApplication extends AbstractApplication implements Application 
         try {
             this.responseMaker = new HttpResponseMaker(conf);
         } catch (ResourceHandlerException e) {
-            //TODO LOG
+            logger.warn(e.getMessage(),e);
         }
     }
 
@@ -52,15 +56,15 @@ public class HttpApplication extends AbstractApplication implements Application 
             try {
                 setKeepAlive(message, key);
             } catch (SocketException e) {
-                //TODO LOG
+                logger.error("No keep alive", e);
             }
             HttpResponse resp = responseMaker.makeResponse(request.getMessage());
             ResponseBufferStorage.getInsance().put(key, resp.serialize());
             notifyReadyToWrite(key);
             request.setStatus(Status.Served);
         } catch (Throwable e) {
-            //TODO ERROR 500
-            e.printStackTrace();
+            internalServerError(key);
+
         }
 
     }
@@ -87,9 +91,20 @@ public class HttpApplication extends AbstractApplication implements Application 
                 setKeepAlive(false, key);
                 writeResponse(response, key);
             } catch (SocketException e) {
-                //TODO LOG
+                logger.error(e.getMessage(),e);
             } catch (IOException e) {
-                // TODO ERROR 500
+                internalServerError(key);
+            }
+        }
+    }
+    public void internalServerError(SelectionKey key) {
+        if (ResponseBufferStorage.getInsance().get(key) == null) {
+            try {
+                HttpResponse response = responseMaker.makeInternalServerError();
+                setKeepAlive(true, key);
+                writeResponse(response, key);
+            } catch (Exception e) {
+                //nothing to do
             }
         }
     }

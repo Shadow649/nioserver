@@ -2,7 +2,11 @@ package com.shadow649soft.server.impl.http.request;
 
 import com.shadow649soft.server.api.http.common.HttpMethod;
 import com.shadow649soft.server.api.http.common.HttpVersion;
-
+/**
+ * HttpReqest is parsed line by line
+ * @author Emanuele Lombardi
+ *
+ */
 public class HttpRequestLineParser {
 
     private static final String HEADER_SPERATOR = ":";

@@ -96,5 +96,13 @@ public class HttpResponseMaker {
         createBody(conf.getHandlerConf().getRequestTimeoutPage());
         return new HttpResponse(responseMessage);
     }
+    
+    public HttpResponse makeInternalServerError() throws IOException {
+        addStandardHeader(HttpVersion.HTTP_1_1);
+        addKeepAliveHeader(false);
+        this.responseMessage.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+        createBody(conf.getHandlerConf().getInternalErrorPage());
+        return new HttpResponse(responseMessage);
+    }
 
 }
