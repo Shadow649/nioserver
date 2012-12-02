@@ -57,7 +57,7 @@ public class WebConversationTest {
         when(ctx.getApplication()).thenReturn(mock(Application.class));
         ioHandler.init(server, ctx);
         } catch (Exception e) {
-            fail(e.getMessage());
+            fail(String.format("%s %s", e.getMessage(), e.getCause()));
         }
     }
     
