@@ -1,5 +1,7 @@
 package com.shadow649soft.server.impl.http.request;
 
+import java.net.URLDecoder;
+
 import com.shadow649soft.server.api.http.common.HttpMethod;
 import com.shadow649soft.server.api.http.common.HttpVersion;
 /**
@@ -102,7 +104,7 @@ public class HttpRequestLineParser {
             try {
                 HttpMethod method = HttpMethod.valueOf(tokens[0]);
                 this.request.setMethod(method);
-                this.request.setRequestPath(tokens[1]);
+                this.request.setRequestPath(URLDecoder.decode(tokens[1],"UTF-8"));
                 HttpVersion protocolVersion = HttpVersion.fromString(tokens[2]);
                 this.request.setVersion(protocolVersion);
                 this.status = ParserStatus.REQUEST_LINE_OK; 

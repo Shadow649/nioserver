@@ -1,0 +1,796 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- saved from url=(0115)http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#component-architecture -->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr" class="js"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+  <title>Architecture of a Highly Scalable NIO-Based Server | Java.net</title>
+  
+
+<link rel="alternate" type="application/atom+xml" title="Java.net Atom" href="http://today.java.net/node/219736/atom/feed">
+<link rel="shortcut icon" href="http://today.java.net/sites/default/files/java_adaptive_favicon_2.png" type="image/x-icon">
+  <link type="text/css" rel="stylesheet" media="all" href="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/css_e9a10d3bb45494dfd20adcf1bd8b4b99.css">
+  <style type="text/css">#container{width:100%;}.two-sidebars .content-inner{margin-left:240px; margin-right:240px;}.sidebar-first .content-inner{margin-left:240px; margin-right:0;}.sidebar-last .content-inner{margin-right:240px; margin-left:0;}#sidebar-first{width:240px;margin-left:-100%;}#sidebar-last{width:240px;margin-left:-240px;}</style>    <!--[if lte IE 6]><style type="text/css" media="all">@import "/sites/all/themes/java_adaptive/css/ie6.css";</style><![endif]-->
+    <!--[if IE 7]><style type="text/css" media="all">@import "/sites/all/themes/java_adaptive/css/ie7.css";</style><![endif]-->
+    <!--[if IE 8]><style type="text/css" media="all">@import "/sites/all/themes/java_adaptive/css/ie8.css";</style><![endif]-->
+
+<link href="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/sharethis.f8aeb821aa52b7af5ae4d3675118594c.css" rel="stylesheet" type="text/css"></head>
+<body class="not-front not-logged-in article-type-article one-sidebar sidebar-first section-pub page-node-219736  lightbox-processed jsenabled" onclick="if(SHARETHIS.buttonClicked==false){SHARETHIS.stopClosing=false;SHARETHIS.openDuration=0;stClose(100);}">
+
+  <div id="container">
+
+<!--
+<div style="margin-bottom: 0.5em; background-color: rgb(255, 204, 204); font-size: 1.00em; padding: 0.5em; border: 1px solid rgb(255, 0, 0); text-align: center;"> <font color="red">
+Notice: Java.net will be offline during a scheduled maintenance window from 6-8 pm PT on February 1, 2012 (2-4 am UTC February 2, 2012). We expect the site to be offline for approximately 30 minutes during that window while we do some hardware upgrades. During this offline period the forge side will be unavailable and the rest of the site will be read only.
+The project pages on Java.net, as well as Kenai.com, OpenOffice.org, and NetBeans.org are offline.  We apologize for the inconvenience and are working to restore service.
+</font></div>
+
+<div style="margin-bottom: 0.5em; background-color: rgb(255, 204, 204); font-size: 1.00em; padding: 0.5em; border: 1px solid rgb(255, 0, 0); text-align: center;"> <font color="red">
+Notice: Java.net will be offline starting around noon pacific time (7pm UTC) on Friday, April 27, through noon pacific time (7pm UTC) on Monday, April 30 for scheduled maintenance.
+</font></div>
+-->
+
+
+    <div id="skip-nav" class="element-invisible">
+      <!-- To adjust the display of the skip link see the Advanced theme settings (General settings), and never use display:none! -->
+      <a href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#main-content">Skip to main content</a>
+    </div>
+
+        
+    
+          <div id="logonboard"><div id="block-block-31" class="block">
+  <div class="block-inner">
+
+    
+    <div class="content"><a href="https://java.net/people/login?original_uri=http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html">Login</a><a href="http://java.net/people/new">Join Now</a><a href="http://java.net/projects/help/pages/Home" class="last">Help</a></div>
+
+    
+  </div>
+</div> <!-- /block -->
+</div> <!-- /leaderboard -->
+    
+    <div id="header" class="clearfix">
+
+              <div id="branding" role="banner">
+
+                                    <div class="logo-site-name"><strong>
+                <span id="logo"><a href="http://www.java.net/" rel="home"><img src="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/logo.png" alt="Java.net logo" title="Home page"></a></span>                              </strong></div> <!-- /logo/site name -->
+                      
+                      <div id="site-slogan">The Source for Java Technology Collaboration</div> <!-- /slogan -->
+          
+        </div> <!-- /branding -->
+      
+              <div id="search-box" class="hide-label">
+        <!-- default search disabled  -->
+          <form action="http://today.java.net/search/node" method="post" id="search-theme-form" role="search">
+            <div id="search">
+            <!-- Filter search by content type -->
+              <input type="hidden" value="search_form" id="edit-search-form" name="form_id">
+              <div style="margin-left: -10px;" class="checks">
+                <span><input type="checkbox" name="type[forum]" id="edit-forums" value="forum"> <span class="label">Forums</span></span>
+                <span><input type="checkbox" name="type[blog]" id="edit-blogs" value="blog"> <span class="label">Blogs</span></span>
+                <span><input type="checkbox" name="projects" id="edit-projects" value="project"> <span class="label">Projects</span></span>
+                <span><input type="checkbox" name="people" id="edit-people" value="people"> <span class="label">People</span></span>
+              </div>
+            <!-- Search text field and submit -->
+              <input type="text" class="form-text" id="edit-search-theme-form-1" value="Search All" size="15" onclick="this.value = &#39;&#39;" onblur="if (!this.value) this.value = &#39;&#39;" name="keys">
+              <input type="submit" value="" name="op" title="Search" class="form-submit" alt="Search">
+              <!-- <input type="hidden" value="bed077369599e4b60fa0d1b0697e444b" name="form_token" /> -->
+            </div>
+          </form>
+        </div> <!-- /search box -->
+      
+      
+    </div> <!-- /header -->
+
+    
+          <div id="primary" class="nav">
+        <div id="primary-inner">
+        <h2 class="element-invisible">Main Menu</h2>
+        <ul class="primary-links clearfix"><li class="menu-8209"><a href="http://www.java.net/" title="Return to the java.net homepage">Home</a></li>
+<li class="menu-8210"><a href="http://www.java.net/projects/community" title="View the projects hosted on java.net">Projects</a></li>
+<li class="menu-8211"><a href="http://www.java.net/forum" title="Participate in the java.net forums">Forums</a></li>
+<li class="menu-8240"><a href="http://beta.java.net/people" title="View all the people involved with java.net">People</a></li>
+<li class="menu-8241"><a href="http://www.java.net/jugs/java-user-groups" title="Get involved in your local Java User Group (JUG)">Java User Groups</a></li>
+<li class="menu-19124"><a href="http://today.java.net/community/jcp" title="Get involved with the Java Community Process!">JCP</a></li>
+</ul>
+        </div>
+      </div> <!-- /primary link menu -->
+        
+    
+    
+    
+    
+    <div id="columns"><div class="columns-inner clearfix">
+
+      <div id="content-column"><div class="content-inner">
+
+        
+        
+        <div id="main-content" role="main">
+
+                      <div id="main-content-header">
+              <h1 id="page-title">Architecture of a Highly Scalable NIO-Based Server</h1>                
+                          </div>
+          
+          
+          <div id="content">
+<div class="article">
+
+  
+  
+  
+  <div class="field date">
+                                <div class="item odd"><span class="date-display-single">February 13, 2007</span></div>
+              </div>
+ <!-- /content-field -->
+<div class="field field-type-nodereference field-field-author">
+    <div class="field-items">
+            <div class="field-item odd">
+                    <a href="http://today.java.net/pub/au/542">Gregor Roth</a>        </div>
+        </div>
+</div>
+<div id="node-author-date">
+	</div>
+<div id="clearboth" style="clear:both"></div> <!-- /content-field -->
+<h2>
+<img src="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/111-NIO.gif" height="91" width="111" alt="{cs.r.title}" border="0" align="left" hspace="10" vspace="0"><br>
+<csfield name="title"></csfield></h2>
+<p><csfield name="id_author" before="by " hrefaction="pub"><csfield name="id_author2" before=" and " hrefaction="pub"><br>
+<csfield name="date"><br clear="all"></csfield></csfield></csfield></p>
+<div class="jumpnav">
+<ul>
+<li><strong>Contents</strong></li>
+<li><a href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#threading-architecture">Threading Architecture</a></li>
+<li><a href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#reactor-pattern">The Reactor Pattern</a></li>
+<li><a href="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/Architecture of a Highly Scalable NIO-Based Server   Java.net.html">Component Architecture</a></li>
+<li><a href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#acceptor">Acceptor</a></li>
+<li><a href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#dispatcher">Dispatcher</a></li>
+<li><a href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#dispatcher-level-eventhandler">Dispatcher-Level <code class="prettyprint"><span class="typ">EventHandler</span></code></a></li>
+<li><a href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#application-level-eventhandler">Application-Level <code class="prettyprint"><span class="typ">EventHandler</span></code></a></li>
+<li><a href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#conclusion">Conclusion</a></li>
+<li><a href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#resources">Resources</a></li>
+</ul>
+</div>
+<p>If you are asked to write a highly scalable Java-based server,<br>
+it won't take long to decide to use the Java NIO package. To get<br>
+your server running, you will probably spend a lot of time reading<br>
+blogs and tutorials to understand the thread synchronization needs<br>
+of the NIO <code class="prettyprint"><span class="typ">Selector</span></code> class and to deal with common<br>
+pitfalls. This article describes the basic architecture of a<br>
+connection-oriented NIO-based server. It takes a look at a<br>
+preferred threading model and discusses the basic components of<br>
+such a server.</p>
+<h3 id="threading-architecture">Threading Architecture</h3>
+<p>The first and most intuitive way to implement a multi-threaded<br>
+server is to follow the <i>thread-per-connection</i><br>
+approach. This is the traditional pre-Java-1.4 solution, caused by<br>
+the lack of non-blocking I/O support in older Java versions. The<br>
+thread-per-connection approach uses an exclusive worker thread for<br>
+each connection. Within the handling loop, a worker thread waits<br>
+for new incoming data, processes the request, returns the response<br>
+data, and calls the blocking socket's <code class="prettyprint"><span class="pln">read</span></code> method<br>
+again.</p>
+<pre class="prettyprint"><code><span class="pln">
+</span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">class</span><span class="pln"> </span><span class="typ">Server</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp; </span><span class="kwd">private</span><span class="pln"> </span><span class="typ">ExecutorService</span><span class="pln"> executors </span><span class="pun">=</span><span class="pln"> </span><span class="typ">Executors</span><span class="pun">.</span><span class="pln">newFixedThreadPool</span><span class="pun">(</span><span class="lit">10</span><span class="pun">);</span><span class="pln">
+&nbsp; </span><span class="kwd">private</span><span class="pln"> </span><span class="kwd">boolean</span><span class="pln"> isRunning </span><span class="pun">=</span><span class="pln"> </span><span class="kwd">true</span><span class="pun">;</span><span class="pln">
+&nbsp; 
+&nbsp; </span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">static</span><span class="pln"> </span><span class="kwd">void</span><span class="pln"> main</span><span class="pun">(</span><span class="typ">String</span><span class="pun">...</span><span class="pln"> args</span><span class="pun">)</span><span class="pln"> </span><span class="kwd">throws</span><span class="pln"> </span><span class="pun">...</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">new</span><span class="pln"> </span><span class="typ">Server</span><span class="pun">().</span><span class="pln">launch</span><span class="pun">(</span><span class="typ">Integer</span><span class="pun">.</span><span class="pln">parseInt</span><span class="pun">(</span><span class="pln">args</span><span class="pun">[</span><span class="lit">0</span><span class="pun">]));</span><span class="pln">
+&nbsp; </span><span class="pun">}</span><span class="pln"> 
+
+&nbsp; </span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">void</span><span class="pln"> launch</span><span class="pun">(</span><span class="kwd">int</span><span class="pln"> port</span><span class="pun">)</span><span class="pln"> </span><span class="kwd">throws</span><span class="pln"> </span><span class="pun">...</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="typ">ServerSocket</span><span class="pln"> sso </span><span class="pun">=</span><span class="pln"> </span><span class="kwd">new</span><span class="pln"> </span><span class="typ">ServerSocket</span><span class="pun">(</span><span class="pln">port</span><span class="pun">);</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">while</span><span class="pln"> </span><span class="pun">(</span><span class="pln">isRunning</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="typ">Socket</span><span class="pln"> s </span><span class="pun">=</span><span class="pln"> sso</span><span class="pun">.</span><span class="pln">accept</span><span class="pun">();</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; executors</span><span class="pun">.</span><span class="pln">execute</span><span class="pun">(</span><span class="kwd">new</span><span class="pln"> </span><span class="typ">Worker</span><span class="pun">(</span><span class="pln">s</span><span class="pun">));</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp; </span><span class="pun">}</span><span class="pln">
+
+&nbsp; </span><span class="kwd">private</span><span class="pln"> </span><span class="kwd">class</span><span class="pln"> </span><span class="typ">Worker</span><span class="pln"> </span><span class="kwd">implements</span><span class="pln"> </span><span class="typ">Runnable</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">private</span><span class="pln"> </span><span class="typ">LineNumberReader</span><span class="pln"> </span><span class="kwd">in</span><span class="pln"> </span><span class="pun">=</span><span class="pln"> </span><span class="kwd">null</span><span class="pun">;</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="pun">...</span><span class="pln">
+
+&nbsp;&nbsp;&nbsp; </span><span class="typ">Worker</span><span class="pun">(</span><span class="typ">Socket</span><span class="pln"> s</span><span class="pun">)</span><span class="pln"> </span><span class="kwd">throws</span><span class="pln"> </span><span class="pun">...</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">in</span><span class="pln"> </span><span class="pun">=</span><span class="pln"> </span><span class="kwd">new</span><span class="pln"> </span><span class="typ">LineNumberReader</span><span class="pun">(</span><span class="kwd">new</span><span class="pln"> </span><span class="typ">InputStreamReader</span><span class="pun">(...));</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">out</span><span class="pln"> </span><span class="pun">=</span><span class="pln"> </span><span class="pun">...</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">void</span><span class="pln"> run</span><span class="pun">()</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">while</span><span class="pln"> </span><span class="pun">(</span><span class="pln">isRunning</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">try</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="com">// blocking read of a request (line) </span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="typ">String</span><span class="pln"> request </span><span class="pun">=</span><span class="pln"> </span><span class="kwd">in</span><span class="pun">.</span><span class="pln">readLine</span><span class="pun">();</span><span class="pln">
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="com">// processing the request</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">...</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="typ">String</span><span class="pln"> response </span><span class="pun">=</span><span class="pln"> </span><span class="pun">...</span><span class="pln">
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="com">// return the response</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">out</span><span class="pun">.</span><span class="pln">write</span><span class="pun">(</span><span class="pln">resonse</span><span class="pun">);</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">out</span><span class="pun">.</span><span class="pln">flush</span><span class="pun">();</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln"> </span><span class="kwd">catch</span><span class="pln"> </span><span class="pun">(</span><span class="typ">Exception</span><span class="pln"> e </span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln"> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">...</span><span class="pln"> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">in</span><span class="pun">.</span><span class="pln">close</span><span class="pun">();</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">...</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln"> 
+&nbsp; </span><span class="pun">}</span><span class="pln">
+</span><span class="pun">}</span></code></pre>
+<p></p>
+<p>There is always a one-to-one relationship between simultaneous<br>
+client connections and the number of concurrent worker threads.<br>
+Because each connection has an associated thread waiting on the<br>
+server side, very good response times can be achieved. However,<br>
+higher loads require a higher number of running, concurrent<br>
+threads, which limits scalability. In particular, long-living<br>
+connections like persistent HTTP connections lead to a lot of<br>
+concurrent worker threads, which tend to waste their time waiting<br>
+for new client requests. In addition, hundreds or even thousands of<br>
+concurrent threads can waste a great deal of stack space. Note, for<br>
+example, that the <a href="http://java.sun.com/docs/hotspot/threads/threads.html" target="_blank">default<br>
+Java thread stack size for Solaris/Sparc</a> is 512 KB.</p>
+<p>If the server has to handle a high number of simultaneous<br>
+clients and tolerate slow, unresponsive clients, an alternative<br>
+threading architecture is needed. The <i>thread-on-event</i><br>
+approach implements such requirements in a very efficient way. The<br>
+worker threads are independent from the connections and will only<br>
+be used to handle <i>specific</i> events. For instance, if a<br>
+<i>data received</i> event occurs, a worker thread will be used to<br>
+process the application-specific encoding and service tasks (or at<br>
+least to start them). Once this job is complete, the worker will be<br>
+returned to the thread pool. This approach requires performing the<br>
+socket I/O operations in a non-blocking manner. The socket's<br>
+<code class="prettyprint"><span class="pln">read</span></code> or <code class="prettyprint"><span class="pln">write</span></code> method calls have to be<br>
+non-blocking. Additionally, an event system is required; it signals<br>
+if new data is available, which in turn initiates the socket<br>
+<code class="prettyprint"><span class="pln">read</span></code> call. This removes the one-to-one relationship<br>
+between waiting reads and taken threads. The design of such an<br>
+event-driven I/O system is described by the <i>Reactor<br>
+pattern</i>.</p>
+<h3 id="reactor-pattern">The Reactor Pattern</h3>
+<p>The <a href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#resources">Reactor pattern</a>, illustrated in<br>
+Figure 1, separates the detection of events like <i>readiness for<br>
+read</i> or <i>readiness for accepting</i> and the processing of<br>
+these events. If a readiness event occurs, an event handler will be<br>
+notified to perform the appropriate processing within dedicated<br>
+worker threads.</p>
+<p><img src="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/reactor.png" alt="A NIO-based Reactor pattern implementation" width="450" height="339"><br>
+<i>Figure 1. A NIO-based Reactor pattern implementation</i></p>
+<p>To participate in the event architecture, the connection's<br>
+<code class="prettyprint"><span class="typ">Channel</span></code> has to be registered on a<br>
+<code class="prettyprint"><span class="typ">Selector</span></code>. This will be done by calling the<br>
+<code class="prettyprint"><span class="kwd">register</span></code> method. Although this method is part of the<br>
+<code class="prettyprint"><span class="typ">SocketChannel</span></code>, the channel will be registered on the<br>
+<code class="prettyprint"><span class="typ">Selector</span></code>, not the other way around.</p>
+<pre class="prettyprint"><code><span class="pln">
+</span><span class="pun">...</span><span class="pln">
+</span><span class="typ">SocketChannel</span><span class="pln"> channel </span><span class="pun">=</span><span class="pln"> serverChannel</span><span class="pun">.</span><span class="pln">accept</span><span class="pun">();</span><span class="pln">
+channel</span><span class="pun">.</span><span class="pln">configureBlocking</span><span class="pun">(</span><span class="kwd">false</span><span class="pun">);</span><span class="pln">
+
+</span><span class="com">// register the connection</span><span class="pln">
+</span><span class="typ">SelectionKey</span><span class="pln"> sk </span><span class="pun">=</span><span class="pln"> channel</span><span class="pun">.</span><span class="kwd">register</span><span class="pun">(</span><span class="pln">selector</span><span class="pun">,</span><span class="pln"> </span><span class="typ">SelectionKey</span><span class="pun">.</span><span class="pln">OP_READ</span><span class="pun">);</span><span class="pln">
+</span><span class="pun">...</span></code></pre>
+<p></p>
+<p>To detect new events, the <code class="prettyprint"><span class="typ">Selector</span></code> provides the<br>
+capability to ask the registered channels for their readiness<br>
+events. By calling the <code class="prettyprint"><span class="kwd">select</span></code> method, the<br>
+<code class="prettyprint"><span class="typ">Selector</span></code> collects the readiness events of the<br>
+registered channels. This method call blocks until at least one<br>
+event has been occurred. In this case, the method returns the<br>
+number of connections that have become ready for I/O operations<br>
+since the last <code class="prettyprint"><span class="kwd">select</span></code> call. The selected connections<br>
+can be retrieved by calling the Selector's <code class="prettyprint"><span class="pln">selectedKey</span></code><br>
+method. This method returns a set of <code class="prettyprint"><span class="typ">SelectionKey</span></code><br>
+objects, which holds the IO event status and the reference of the<br>
+connection's <code class="prettyprint"><span class="typ">Channel</span></code>.</p>
+<p>A <code class="prettyprint"><span class="typ">Selector</span></code> is held by the <code class="prettyprint"><span class="typ">Dispatcher</span></code>.<br>
+This is a single-threaded active class that surrounds the<br>
+<code class="prettyprint"><span class="typ">Selector</span></code>. The <code class="prettyprint"><span class="typ">Dispatcher</span></code> is responsible<br>
+to retrieve the events and to dispatch the handling of the consumed<br>
+events to the <code class="prettyprint"><span class="typ">EventHandler</span></code>. Within the dispatch loop,<br>
+the <code class="prettyprint"><span class="typ">Dispatcher</span></code> calls the <code class="prettyprint"><span class="typ">Selector</span></code>'s<br>
+<code class="prettyprint"><span class="kwd">select</span></code> method to wait for new events. If at least one<br>
+event has been occurred, the method call returns and the associated<br>
+channel for each event can be acquired by calling the<br>
+<code class="prettyprint"><span class="pln">selectedKeys</span></code> method.</p>
+<pre class="prettyprint"><code><span class="pln">
+</span><span class="pun">...</span><span class="pln">
+</span><span class="kwd">while</span><span class="pln"> </span><span class="pun">(</span><span class="pln">isRunning</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp; </span><span class="com">// blocking call, to wait for new readiness events</span><span class="pln">
+&nbsp; </span><span class="kwd">int</span><span class="pln"> eventCount </span><span class="pun">=</span><span class="pln"> selector</span><span class="pun">.</span><span class="kwd">select</span><span class="pun">();</span><span class="pln"> 
+ 
+&nbsp; </span><span class="com">// get the events</span><span class="pln">
+&nbsp; </span><span class="typ">Iterator</span><span class="pun">&amp;</span><span class="pln">lt</span><span class="pun">;</span><span class="typ">SelectionKey</span><span class="pun">&amp;</span><span class="pln">gt</span><span class="pun">;</span><span class="pln"> it </span><span class="pun">=</span><span class="pln"> selector</span><span class="pun">.</span><span class="pln">selectedKeys</span><span class="pun">().</span><span class="pln">iterator</span><span class="pun">();</span><span class="pln">
+&nbsp; </span><span class="kwd">while</span><span class="pln"> </span><span class="pun">(</span><span class="pln">it</span><span class="pun">.</span><span class="pln">hasNext</span><span class="pun">())</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="typ">SelectionKey</span><span class="pln"> key </span><span class="pun">=</span><span class="pln"> it</span><span class="pun">.</span><span class="kwd">next</span><span class="pun">();</span><span class="pln">
+&nbsp;&nbsp;&nbsp; it</span><span class="pun">.</span><span class="pln">remove</span><span class="pun">();</span><span class="pln">
+&nbsp;&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp; </span><span class="com">// readable event?</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">if</span><span class="pln"> </span><span class="pun">(</span><span class="pln">key</span><span class="pun">.</span><span class="pln">isValid</span><span class="pun">()</span><span class="pln"> </span><span class="pun">&amp;</span><span class="pln">amp</span><span class="pun">;&amp;</span><span class="pln">amp</span><span class="pun">;</span><span class="pln"> key</span><span class="pun">.</span><span class="pln">isReadable</span><span class="pun">())</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; eventHandler</span><span class="pun">.</span><span class="pln">onReadableEvent</span><span class="pun">(</span><span class="pln">key</span><span class="pun">.</span><span class="pln">channel</span><span class="pun">());</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp; </span><span class="com">// writable event? </span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">if</span><span class="pln"> </span><span class="pun">(</span><span class="pln">key</span><span class="pun">.</span><span class="pln">isValid</span><span class="pun">()</span><span class="pln"> </span><span class="pun">&amp;</span><span class="pln">amp</span><span class="pun">;&amp;</span><span class="pln">amp</span><span class="pun">;</span><span class="pln"> key</span><span class="pun">.</span><span class="pln">isWritable</span><span class="pun">())</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; key</span><span class="pun">.</span><span class="pln">interestOps</span><span class="pun">(</span><span class="typ">SelectionKey</span><span class="pun">.</span><span class="pln">OP_READ</span><span class="pun">);</span><span class="pln"> </span><span class="com">// reset to read only</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; eventHandler</span><span class="pun">.</span><span class="pln">onWriteableEvent</span><span class="pun">(</span><span class="pln">key</span><span class="pun">.</span><span class="pln">channel</span><span class="pun">());</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="pun">...</span><span class="pln">
+&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp; </span><span class="pun">...</span><span class="pln">
+</span><span class="pun">}</span></code></pre>
+<p></p>
+<p>Based on an event like <i>readiness for read</i> or <i>readiness<br>
+for write</i>, the <code class="prettyprint"><span class="typ">EventHandler</span></code> will be called by the<br>
+<code class="prettyprint"><span class="typ">Dispatcher</span></code> to process the event. The<br>
+<code class="prettyprint"><span class="typ">EventHandler</span></code> decodes the request data, processes the<br>
+required service activities, and encodes the response data. Because<br>
+worker threads are not forced to waste time by waiting for new<br>
+requests to open a connection, the scalability and throughput of<br>
+this approach is conceptually only limited by system resources like<br>
+CPU or memory. That said, the response times wouldn't be as good<br>
+as for the thread-per-connection approach, because of the required<br>
+thread switches and synchronization. The challenge of the<br>
+event-driven approach is therefore to minimize synchronizations and<br>
+optimize thread management, so that this overhead will be<br>
+negligible.</p>
+<h3 id="component-architecture">Component Architecture</h3>
+<p>Most highly scalable Java servers are built on the top of the<br>
+<i>Reactor pattern</i>. By doing this, the classes of the Reactor<br>
+pattern will be enhanced by additional classes for connection<br>
+management, buffer management, and for load balancing reasons. The<br>
+entry class of such a server is the <code class="prettyprint"><span class="typ">Acceptor</span></code>. This<br>
+arrangement is shown in Figure 2.</p>
+<p><img src="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/server.png" alt="Major components of a connection-oriented server" width="450" height="254"><br>
+<i>Figure 2. Major components of a connection-oriented server</i></p>
+<h3 id="acceptor">Acceptor</h3>
+<p>Every new client connection of a server will be accepted by the<br>
+single <code class="prettyprint"><span class="typ">Acceptor</span></code>, which is bound to the server port.<br>
+The <code class="prettyprint"><span class="typ">Acceptor</span></code> is a single threaded active class.<br>
+Because it is only responsible for handling the very short-running<br>
+client connection request, it is often sufficient to implement the<br>
+<code class="prettyprint"><span class="typ">Acceptor</span></code> using the blocking I/O model. The<br>
+<code class="prettyprint"><span class="typ">Acceptor</span></code> gets the handle of a new connection by<br>
+calling the <code class="prettyprint"><span class="typ">ServerSocketChannel</span></code>'s blocking<br>
+<code class="prettyprint"><span class="pln">accept</span></code> method. The new connection will be registered<br>
+to a <code class="prettyprint"><span class="typ">Dispatcher</span></code>. After this, the connection<br>
+participates in event handling.</p>
+<p>Because the scalability of a single <code class="prettyprint"><span class="typ">Dispatcher</span></code> is<br>
+limited, often a small pool of <code class="prettyprint"><span class="typ">Dispatcher</span></code>s will be<br>
+used. One reason for this limitation is the operating-system-specific implementation of the <code class="prettyprint"><span class="typ">Selector</span></code>. Most popular<br>
+operating systems map a <code class="prettyprint"><span class="typ">SocketChannel</span></code> to a file handle<br>
+in a one-to-one relationship. Depending on the concrete system, the<br>
+maximum number of file handles per <code class="prettyprint"><span class="typ">Selector</span></code> is limited<br>
+in a different way.</p>
+<pre class="prettyprint"><code><span class="pln">
+</span><span class="kwd">class</span><span class="pln"> </span><span class="typ">Acceptor</span><span class="pln"> </span><span class="kwd">implements</span><span class="pln"> </span><span class="typ">Runnable</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp; </span><span class="pun">...</span><span class="pln">
+&nbsp; </span><span class="kwd">void</span><span class="pln"> init</span><span class="pun">()</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="typ">ServerSocketChannel</span><span class="pln"> serverChannel </span><span class="pun">=</span><span class="pln"> </span><span class="typ">ServerSocketChannel</span><span class="pun">.</span><span class="pln">open</span><span class="pun">();</span><span class="pln">
+&nbsp;&nbsp;&nbsp; serverChannel</span><span class="pun">.</span><span class="pln">configureBlocking</span><span class="pun">(</span><span class="kwd">true</span><span class="pun">);</span><span class="pln">
+&nbsp;&nbsp;&nbsp; serverChannel</span><span class="pun">.</span><span class="pln">socket</span><span class="pun">().</span><span class="pln">bind</span><span class="pun">(</span><span class="kwd">new</span><span class="pln"> </span><span class="typ">InetSocketAddress</span><span class="pun">(</span><span class="pln">serverPort</span><span class="pun">));</span><span class="pln">
+&nbsp; </span><span class="pun">}</span><span class="pln">
+
+&nbsp; </span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">void</span><span class="pln"> run</span><span class="pun">()</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">while</span><span class="pln"> </span><span class="pun">(</span><span class="pln">isRunning</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">try</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="typ">SocketChannel</span><span class="pln"> channel </span><span class="pun">=</span><span class="pln"> serverChannel</span><span class="pun">.</span><span class="pln">accept</span><span class="pun">();</span><span class="pln"> 
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="typ">Connection</span><span class="pln"> con </span><span class="pun">=</span><span class="pln"> </span><span class="kwd">new</span><span class="pln"> </span><span class="typ">Connection</span><span class="pun">(</span><span class="pln">channel</span><span class="pun">,</span><span class="pln"> appHandler</span><span class="pun">);</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dispatcherPool</span><span class="pun">.</span><span class="pln">nextDispatcher</span><span class="pun">().</span><span class="kwd">register</span><span class="pun">(</span><span class="pln">con</span><span class="pun">);</span><span class="pln">&nbsp; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln"> </span><span class="kwd">catch</span><span class="pln"> </span><span class="pun">(...)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">...</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp; </span><span class="pun">}</span><span class="pln">
+</span><span class="pun">}</span></code></pre>
+<p></p>
+<p>In the example code, a <code class="prettyprint"><span class="typ">Connection</span></code> object holds the<br>
+<code class="prettyprint"><span class="typ">SocketChannel</span></code> and an application-level event handler.<br>
+These classes will be described below.</p>
+<h3 id="dispatcher">Dispatcher</h3>
+<p>By calling the <code class="prettyprint"><span class="typ">Dispatcher</span></code>'s <code class="prettyprint"><span class="kwd">register</span></code><br>
+method, the <code class="prettyprint"><span class="typ">SocketChannel</span></code> will be registered on the<br>
+underlying <code class="prettyprint"><span class="typ">Selector</span></code>. Here is where the trouble comes<br>
+in. The <code class="prettyprint"><span class="typ">Selector</span></code> manages the registered channels<br>
+internally by using <i>key sets</i>. This means that by registering a<br>
+channel, an associated <code class="prettyprint"><span class="typ">SelectionKey</span></code> will be created<br>
+and be added to the Selector's <i>registered key set</i>. At the<br>
+same time, the concurrent dispatcher thread could call the<br>
+<code class="prettyprint"><span class="typ">Selector</span></code>'s <code class="prettyprint"><span class="kwd">select</span></code> method, which also<br>
+accesses the key set. Because the key sets are not<br>
+thread-safe, an unsynchronized registration in the context of the<br>
+<code class="prettyprint"><span class="typ">Acceptor</span></code> thread can lead to deadlocks and race<br>
+conditions. This can be solved by implementing the <i>selector<br>
+guard object idiom</i>, which allows suspending the dispatcher<br>
+thread temporarily. See "<a href="http://today.java.net/pub/a/today/2007/02/13/%3Cbr">
+"http://developers.sun.com/learning/javaoneonline/2006/coreplatform/TS-1315.pdf"&gt;<br>
+How to Build a Scalable Multiplexed Server with NIO</a>" (PDF) for an<br>
+explanation of this approach.</p>
+<pre class="prettyprint"><code><span class="pln">
+</span><span class="kwd">class</span><span class="pln"> </span><span class="typ">Dispatcher</span><span class="pln"> </span><span class="kwd">implements</span><span class="pln"> </span><span class="typ">Runnable</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp; </span><span class="kwd">private</span><span class="pln"> </span><span class="typ">Object</span><span class="pln"> guard </span><span class="pun">=</span><span class="pln"> </span><span class="kwd">new</span><span class="pln"> </span><span class="typ">Object</span><span class="pun">();</span><span class="pln">
+&nbsp; </span><span class="pun">&amp;</span><span class="pln">hellip</span><span class="pun">;</span><span class="pln">
+
+&nbsp; </span><span class="kwd">void</span><span class="pln"> </span><span class="kwd">register</span><span class="pun">(</span><span class="typ">Connection</span><span class="pln"> con</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="com">// retrieve the guard lock and wake up the dispatcher thread</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="com">// to register the connection's channel</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">synchronized</span><span class="pln"> </span><span class="pun">(</span><span class="pln">guard</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; selector</span><span class="pun">.</span><span class="pln">wakeup</span><span class="pun">();</span><span class="pln">&nbsp; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; con</span><span class="pun">.</span><span class="pln">getChannel</span><span class="pun">().</span><span class="kwd">register</span><span class="pun">(</span><span class="pln">selector</span><span class="pun">,</span><span class="pln"> </span><span class="typ">SelectionKey</span><span class="pun">.</span><span class="pln">OP_READ</span><span class="pun">,</span><span class="pln"> con</span><span class="pun">);</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+
+&nbsp;&nbsp;&nbsp; </span><span class="com">// notify the application EventHandler about the new connection </span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="pun">&amp;</span><span class="pln">hellip</span><span class="pun">;</span><span class="pln">
+&nbsp; </span><span class="pun">}</span><span class="pln">
+
+
+&nbsp; </span><span class="kwd">void</span><span class="pln"> announceWriteNeed</span><span class="pun">(</span><span class="typ">Connection</span><span class="pln"> con</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="typ">SelectionKey</span><span class="pln"> key </span><span class="pun">=</span><span class="pln"> con</span><span class="pun">.</span><span class="pln">getChannel</span><span class="pun">().</span><span class="pln">keyFor</span><span class="pun">(</span><span class="pln">selector</span><span class="pun">);</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">synchronized</span><span class="pln"> </span><span class="pun">(</span><span class="pln">guard</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; selector</span><span class="pun">.</span><span class="pln">wakeup</span><span class="pun">();</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; key</span><span class="pun">.</span><span class="pln">interestOps</span><span class="pun">(</span><span class="typ">SelectionKey</span><span class="pun">.</span><span class="pln">OP_READ </span><span class="pun">|</span><span class="pln"> </span><span class="typ">SelectionKey</span><span class="pun">.</span><span class="pln">OP_WRITE</span><span class="pun">);</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp; </span><span class="pun">}</span><span class="pln">
+
+&nbsp; </span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">void</span><span class="pln"> run</span><span class="pun">()</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">while</span><span class="pln"> </span><span class="pun">(</span><span class="pln">isRunning</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">synchronized</span><span class="pln"> </span><span class="pun">(</span><span class="pln">guard</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="com">// suspend the dispatcher thead if guard is locked </span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">int</span><span class="pln"> eventCount </span><span class="pun">=</span><span class="pln"> selector</span><span class="pun">.</span><span class="kwd">select</span><span class="pun">();</span><span class="pln">
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="typ">Iterator</span><span class="pun">&amp;</span><span class="pln">lt</span><span class="pun">;</span><span class="typ">SelectionKey</span><span class="pun">&amp;</span><span class="pln">gt</span><span class="pun">;</span><span class="pln"> it </span><span class="pun">=</span><span class="pln"> selector</span><span class="pun">.</span><span class="pln">selectedKeys</span><span class="pun">().</span><span class="pln">iterator</span><span class="pun">();</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">while</span><span class="pln"> </span><span class="pun">(</span><span class="pln">it</span><span class="pun">.</span><span class="pln">hasNext</span><span class="pun">())</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="typ">SelectionKey</span><span class="pln"> key </span><span class="pun">=</span><span class="pln"> it</span><span class="pun">.</span><span class="kwd">next</span><span class="pun">();</span><span class="pln"> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; it</span><span class="pun">.</span><span class="pln">remove</span><span class="pun">();</span><span class="pln">
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="com">// read event?</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">if</span><span class="pln"> </span><span class="pun">(</span><span class="pln">key</span><span class="pun">.</span><span class="pln">isValid</span><span class="pun">()</span><span class="pln"> </span><span class="pun">&amp;</span><span class="pln">amp</span><span class="pun">;&amp;</span><span class="pln">amp</span><span class="pun">;</span><span class="pln"> key</span><span class="pun">.</span><span class="pln">isReadable</span><span class="pun">())</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="typ">Connection</span><span class="pln"> con </span><span class="pun">=</span><span class="pln"> </span><span class="pun">(</span><span class="typ">Connection</span><span class="pun">)</span><span class="pln"> key</span><span class="pun">.</span><span class="pln">attachment</span><span class="pun">();</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; disptacherEventHandler</span><span class="pun">.</span><span class="pln">onReadableEvent</span><span class="pun">(</span><span class="pln">con</span><span class="pun">);</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="com">// write event?</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">&amp;</span><span class="pln">hellip</span><span class="pun">;</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp; </span><span class="pun">}</span><span class="pln">
+</span><span class="pun">}</span></code></pre>
+<p></p>
+<p>After a connection has been registered, the<br>
+<code class="prettyprint"><span class="typ">Selector</span></code> listens for readiness events of this<br>
+connection. If a event occurs, the appropriated callback method of<br>
+the <code class="prettyprint"><span class="typ">Dispatcher</span></code>'s event handler will be called by<br>
+passing the associated connection.</p>
+<h3 id="dispatcher-level-eventhandler">Dispatcher-Level <code class="prettyprint"><span class="typ">EventHandler</span></code></h3>
+<p>The first activity performed while processing a <i>readiness for<br>
+read</i> event is to call the channel's <code class="prettyprint"><span class="pln">read</span></code> method.<br>
+In contrast to the streaming interface, the <code class="prettyprint"><span class="typ">Channel</span></code><br>
+interface requires that a read buffer has to be passed over. Often<br>
+direct-allocated <code class="prettyprint"><span class="typ">ByteBuffer</span></code>s will be used. Direct<br>
+buffers reside in native memory, bypassing the Java heap space. By<br>
+using direct buffers, socket IO operations will be performed<br>
+without the need to create internal intermediate buffers.</p>
+<p>Normally the <code class="prettyprint"><span class="pln">read</span></code> call will be performed very<br>
+quickly. Depending on the operating system, the socket read<br>
+operation often only puts a copy of the received data from the<br>
+kernel memory space into the read buffer, which resides in the user-controlled memory space.</p>
+<p>The received data will be appended to the connection's<br>
+<i>thread-safe</i> read queue for further processing. Based on the<br>
+result of the I/O operation, application-specific tasks have to be<br>
+processed. Such tasks will be processed by the assigned<br>
+application-level event handler. This handler will typically called<br>
+by using a worker thread.</p>
+<pre class="prettyprint"><code><span class="pln">
+</span><span class="kwd">class</span><span class="pln"> </span><span class="typ">DispatcherEventHandler</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp; </span><span class="pun">...</span><span class="pln">
+
+&nbsp; </span><span class="kwd">void</span><span class="pln"> onReadableEvent</span><span class="pun">(</span><span class="kwd">final</span><span class="pln"> </span><span class="typ">Connection</span><span class="pln"> con</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="com">// get the received data </span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="typ">ByteBuffer</span><span class="pln"> readBuffer </span><span class="pun">=</span><span class="pln"> allocateMemory</span><span class="pun">();</span><span class="pln">
+&nbsp;&nbsp;&nbsp; con</span><span class="pun">.</span><span class="pln">getChannel</span><span class="pun">().</span><span class="pln">read</span><span class="pun">(</span><span class="pln">readBuffer</span><span class="pun">);</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="typ">ByteBuffer</span><span class="pln"> data </span><span class="pun">=</span><span class="pln"> extractReadAndRecycleRenaming</span><span class="pun">(</span><span class="pln">readBuffer</span><span class="pun">);</span><span class="pln">
+
+&nbsp;&nbsp;&nbsp; </span><span class="com">// append it to read queue</span><span class="pln">
+&nbsp;&nbsp;&nbsp; con</span><span class="pun">.</span><span class="pln">getReadQueue</span><span class="pun">().</span><span class="pln">add</span><span class="pun">(</span><span class="pln">data</span><span class="pun">);</span><span class="pln"> 
+&nbsp;&nbsp;&nbsp; </span><span class="pun">...</span><span class="pln">
+&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp; </span><span class="com">// perform further operations (encode, process, decode) </span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="com">// by a worker thread</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">if</span><span class="pln"> </span><span class="pun">(</span><span class="pln">con</span><span class="pun">.</span><span class="pln">getReadQueue</span><span class="pun">().</span><span class="pln">getSize</span><span class="pun">()</span><span class="pln"> </span><span class="pun">&amp;</span><span class="pln">gt</span><span class="pun">;</span><span class="pln"> </span><span class="lit">0</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; workerPool</span><span class="pun">.</span><span class="pln">execute</span><span class="pun">(</span><span class="kwd">new</span><span class="pln"> </span><span class="typ">Runnable</span><span class="pun">()</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">void</span><span class="pln"> run</span><span class="pun">()</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">synchronized</span><span class="pln"> </span><span class="pun">(</span><span class="pln">con</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; con</span><span class="pun">.</span><span class="pln">getAppHandler</span><span class="pun">().</span><span class="pln">onData</span><span class="pun">(</span><span class="pln">con</span><span class="pun">);</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">});</span><span class="pln"> 
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp; </span><span class="pun">}</span><span class="pln">
+
+&nbsp; </span><span class="kwd">void</span><span class="pln"> onWriteableEvent</span><span class="pun">(</span><span class="typ">Connection</span><span class="pln"> con</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="typ">ByteBuffer</span><span class="pun">[]</span><span class="pln"> data </span><span class="pun">=</span><span class="pln"> con</span><span class="pun">.</span><span class="pln">getWriteQueue</span><span class="pun">().</span><span class="pln">drain</span><span class="pun">();</span><span class="pln">
+&nbsp;&nbsp;&nbsp; con</span><span class="pun">.</span><span class="pln">getChannel</span><span class="pun">().</span><span class="pln">write</span><span class="pun">(</span><span class="pln">data</span><span class="pun">);</span><span class="pln"> </span><span class="com">// write the data</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="pun">...</span><span class="pln">
+
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">if</span><span class="pln"> </span><span class="pun">(</span><span class="pln">con</span><span class="pun">.</span><span class="pln">getWriteQueue</span><span class="pun">().</span><span class="pln">isEmpty</span><span class="pun">())</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">if</span><span class="pln"> </span><span class="pun">(</span><span class="pln">con</span><span class="pun">.</span><span class="pln">isClosed</span><span class="pun">())</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dispatcher</span><span class="pun">.</span><span class="pln">deregister</span><span class="pun">(</span><span class="pln">con</span><span class="pun">);</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln"> </span><span class="kwd">else</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="com">// there is remaining data to write</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; dispatcher</span><span class="pun">.</span><span class="pln">announceWriteNeed</span><span class="pun">(</span><span class="pln">con</span><span class="pun">);</span><span class="pln"> 
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp; </span><span class="pun">}</span><span class="pln">
+</span><span class="pun">}</span></code></pre>
+<p></p>
+<p>Within the application-specific tasks, data will be encoded,<br>
+services will be performed, and data will be written. By writing data,<br>
+the data to send will be appended to the write queue, and the<br>
+<code class="prettyprint"><span class="typ">Dispatcher</span></code>'s <code class="prettyprint"><span class="pln">announceWriteNeed</span></code> method will be called.<br>
+This method causes the <code class="prettyprint"><span class="typ">Selector</span></code> to listen for<br>
+<i>readiness for write</i> events. If such an event occurs, the<br>
+<code class="prettyprint"><span class="typ">Dispatcher</span></code>-level event handler's method<br>
+<code class="prettyprint"><span class="pln">onWriteableEvent</span></code> will be performed. It gets the data<br>
+from the connection's write queue and performs the required write<br>
+I/O operation. Trying to write data in a direct way, by bypassing<br>
+this event approach, will end in deadlocks and race conditions.</p>
+<h3 id="application-level-eventhandler">Application-Level <code class="prettyprint"><span class="typ">EventHandler</span></code></h3>
+<p>In contrast to the <code class="prettyprint"><span class="typ">Dispatcher</span></code>'s event handler, the<br>
+application-specific event handler listens for higher-level<br>
+connection-oriented events, like <i>connection established</i>,<br>
+<i>data received</i>, or <i>connection disconnected</i>. The<br>
+concrete event handler design is one of the major differences<br>
+between NIO server frameworks like <a href="http://www.eecs.harvard.edu/~mdw/proj/seda" target="_blank">SEDA</a>, <a href="http://mina.apache.org/" target="_blank">MINA</a>, or <a href="http://www.theserverside.com/tt/blogs/showblog.tss?id=DispellingNIOMyths" target="_blank"><br>
+emberIO</a>. Such frameworks often implement a multi-staged<br>
+architecture, where chains of event handlers can be used. This<br>
+allows adding handlers like <code class="prettyprint"><span class="typ">SSLHandler</span></code> or<br>
+<code class="prettyprint"><span class="typ">DelayedWriteHandler</span></code>, which intercept the<br>
+request/response processing. The following example shows an<br>
+application-level handler based on the <a href="http://xsocket.sourceforge.net/" target="_blank">xSocket</a> framework. The xSocket<br>
+framework supports different handler interfaces that define<br>
+callback methods to be implemented by application-specific<br>
+code.</p>
+<pre class="prettyprint"><code><span class="pln">
+</span><span class="kwd">class</span><span class="pln"> POP3ProtocolHandler </span><span class="kwd">implements</span><span class="pln"> </span><span class="typ">IConnectHandler</span><span class="pun">,</span><span class="pln"> </span><span class="typ">IDataHandler</span><span class="pun">,</span><span class="pln"> </span><span class="pun">...</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp; </span><span class="kwd">private</span><span class="pln"> </span><span class="kwd">static</span><span class="pln"> </span><span class="kwd">final</span><span class="pln"> </span><span class="typ">String</span><span class="pln"> DELIMITER </span><span class="pun">=</span><span class="pln"> </span><span class="pun">...</span><span class="pln">
+&nbsp; </span><span class="kwd">private</span><span class="pln"> </span><span class="typ">Mailbox</span><span class="pln"> mailbox </span><span class="pun">=</span><span class="pln"> </span><span class="pun">...</span><span class="pln">
+&nbsp; 
+
+&nbsp; </span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">static</span><span class="pln"> </span><span class="kwd">void</span><span class="pln"> main</span><span class="pun">(</span><span class="typ">String</span><span class="pun">...</span><span class="pln"> args</span><span class="pun">)</span><span class="pln"> </span><span class="kwd">throws</span><span class="pln"> </span><span class="pun">...</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">new</span><span class="pln"> </span><span class="typ">MultithreadedServer</span><span class="pun">(</span><span class="lit">110</span><span class="pun">,</span><span class="pln"> </span><span class="kwd">new</span><span class="pln"> POP3ProtocolHandler</span><span class="pun">()).</span><span class="pln">run</span><span class="pun">();</span><span class="pln">
+&nbsp; </span><span class="pun">}</span><span class="pln">
+
+&nbsp; </span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">boolean</span><span class="pln"> onConnect</span><span class="pun">(</span><span class="typ">INonBlockingConnection</span><span class="pln"> con</span><span class="pun">)</span><span class="pln"> </span><span class="kwd">throws</span><span class="pln"> </span><span class="pun">...</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">if</span><span class="pln"> </span><span class="pun">(</span><span class="pln">gatekeeper</span><span class="pun">.</span><span class="pln">isSuspiciousAddress</span><span class="pun">(</span><span class="pln">con</span><span class="pun">.</span><span class="pln">getRemoteAddress</span><span class="pun">()))</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; con</span><span class="pun">.</span><span class="pln">setWriteTransferRate</span><span class="pun">(</span><span class="lit">5</span><span class="pun">);</span><span class="pln">&nbsp; </span><span class="com">// reduce transfer: 5byte/sec</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+
+&nbsp;&nbsp;&nbsp; con</span><span class="pun">.</span><span class="pln">write</span><span class="pun">(</span><span class="str">"+OK My POP3-Server"</span><span class="pln"> </span><span class="pun">+</span><span class="pln"> DELIMITER</span><span class="pun">);</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">return</span><span class="pln"> </span><span class="kwd">true</span><span class="pun">;</span><span class="pln">
+&nbsp; </span><span class="pun">}</span><span class="pln">
+
+&nbsp; </span><span class="kwd">public</span><span class="pln"> </span><span class="kwd">boolean</span><span class="pln"> onData</span><span class="pun">(</span><span class="typ">INonBlockingConnection</span><span class="pln"> con</span><span class="pun">)</span><span class="pln"> </span><span class="kwd">throws</span><span class="pln"> </span><span class="pun">...</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="typ">String</span><span class="pln"> request </span><span class="pun">=</span><span class="pln"> con</span><span class="pun">.</span><span class="pln">readStringByDelimiter</span><span class="pun">(</span><span class="pln">DELIMITER</span><span class="pun">);</span><span class="pln">
+
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">if</span><span class="pln"> </span><span class="pun">(</span><span class="pln">request</span><span class="pun">.</span><span class="pln">startsWith</span><span class="pun">(</span><span class="str">"QUIT"</span><span class="pun">))</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mailbox</span><span class="pun">.</span><span class="pln">close</span><span class="pun">();</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; con</span><span class="pun">.</span><span class="pln">write</span><span class="pun">(</span><span class="str">"+OK POP3 server signing off"</span><span class="pln"> </span><span class="pun">+</span><span class="pln"> DELIMITER</span><span class="pun">);</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; con</span><span class="pun">.</span><span class="pln">close</span><span class="pun">();</span><span class="pln">
+
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln"> </span><span class="kwd">else</span><span class="pln"> </span><span class="kwd">if</span><span class="pln"> </span><span class="pun">(</span><span class="pln">request</span><span class="pun">.</span><span class="pln">startsWith</span><span class="pun">(</span><span class="str">"USER"</span><span class="pun">))</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">this</span><span class="pun">.</span><span class="pln">user </span><span class="pun">=</span><span class="pln"> request</span><span class="pun">.</span><span class="pln">substring</span><span class="pun">(</span><span class="lit">4</span><span class="pun">,</span><span class="pln"> request</span><span class="pun">.</span><span class="pln">length</span><span class="pun">());</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; con</span><span class="pun">.</span><span class="pln">write</span><span class="pun">(</span><span class="str">"+OK enter password"</span><span class="pln"> </span><span class="pun">+</span><span class="pln"> DELIMITER</span><span class="pun">);</span><span class="pln">
+
+
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln"> </span><span class="kwd">else</span><span class="pln"> </span><span class="kwd">if</span><span class="pln"> </span><span class="pun">(</span><span class="pln">request</span><span class="pun">.</span><span class="pln">startsWith</span><span class="pun">(</span><span class="str">"PASS"</span><span class="pun">))</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="typ">String</span><span class="pln"> pwd </span><span class="pun">=</span><span class="pln"> request</span><span class="pun">.</span><span class="pln">substring</span><span class="pun">(</span><span class="lit">4</span><span class="pun">,</span><span class="pln"> request</span><span class="pun">.</span><span class="pln">length</span><span class="pun">());</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">boolean</span><span class="pln"> isAuthenticated </span><span class="pun">=</span><span class="pln"> authenticator</span><span class="pun">.</span><span class="pln">check</span><span class="pun">(</span><span class="pln">user</span><span class="pun">,</span><span class="pln"> pwd</span><span class="pun">);</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="kwd">if</span><span class="pln"> </span><span class="pun">(</span><span class="pln">isAuthenticated</span><span class="pun">)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mailbox </span><span class="pun">=</span><span class="pln"> </span><span class="typ">MailBox</span><span class="pun">.</span><span class="pln">openAndLock</span><span class="pun">(</span><span class="pln">user</span><span class="pun">);</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; con</span><span class="pun">.</span><span class="pln">write</span><span class="pun">(</span><span class="str">"+OK mailbox locked and ready"</span><span class="pln"> </span><span class="pun">+</span><span class="pln"> DELIMITER</span><span class="pun">);</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln"> </span><span class="kwd">else</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">...</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">&nbsp; 
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln"> </span><span class="kwd">else</span><span class="pln"> </span><span class="kwd">if</span><span class="pln"> </span><span class="pun">(...)</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span class="pun">...</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="pun">}</span><span class="pln">
+&nbsp;&nbsp;&nbsp; </span><span class="kwd">return</span><span class="pln"> </span><span class="kwd">true</span><span class="pun">;</span><span class="pln">
+&nbsp; </span><span class="pun">}</span><span class="pln">
+</span><span class="pun">}</span></code></pre>
+<p></p>
+<p>To ease in accessing the underlying read and write queue, the<br>
+<code class="prettyprint"><span class="typ">Connection</span></code> object provides several convenience<br>
+<code class="prettyprint"><span class="pln">read</span></code> and <code class="prettyprint"><span class="pln">write</span></code> methods for stream- and<br>
+channel-oriented operations.</p>
+<p>By closing the connection, the underlying implementation<br>
+initiates a writeable event round-trip to flush the write queue.<br>
+The connection will be terminated after the remaining data has been<br>
+written. Besides such a controlled termination, connections can be<br>
+disconnected for other reasons. For instance, hardware malfunctions<br>
+could cause the termination of a TCP-based connection. Such a<br>
+situation can only be detected by performing read or write<br>
+operations on the socket, or by idle timeouts. Most NIO frameworks<br>
+provide a built-in function to handle such uncontrolled<br>
+terminations.</p>
+<h3 id="conclusion">Conclusion</h3>
+<p>An event-driven non-blocking architecture is a fundamental layer<br>
+to implement highly efficient, scalable, and reliable servers. The<br>
+challenge is to minimize the thread synchronization overhead and to<br>
+optimize the connection/buffer management. This will be the hardest<br>
+part to program.</p>
+<p>But there is no need to reinvent the wheel. Server frameworks<br>
+like xSocket, emberIO, SEDA, or MINA abstract the low-level event<br>
+handling and thread management to ease the creation of highly<br>
+scalable servers. Most of these server frameworks also support<br>
+features like SSL or UDP, which haven't been discussed in this<br>
+article.</p>
+<h3 id="resources">Resources</h3>
+<ul>
+<li>"<a href="http://gee.cs.oswego.edu/dl/cpjslides/nio.pdf" target="_blank">Scalable IO in<br>
+Java</a>" (PDF) describes event-driven processing by using Java NIO</li>
+<li>"<a href="http://weblogs.java.net/blog/jfarcand/archive/2006/06/tricks_and_tips.html">Tricks and Tips with NIO, Part 2: Why <code class="prettyprint"><span class="typ">SelectionKey</span><span class="pun">.</span><span class="pln">attach</span><span class="pun">()</span></code> Is<br>
+Evil</a>" describes how a memory leak occurs by a unwary use of the<br>
+SelectionKey's <code class="prettyprint"><span class="pln">attach</span></code> method.</li>
+<li>"<a href="http://www.cs.berkeley.edu/~jmacd/cs262.ps" target="_blank">Pico<br>
+Threads: Lightweight Threads in Java</a>" shows the problems with<br>
+large-scale threaded programming and event-based techniques.</li>
+<li>A <a href="http://www.cs.wustl.edu/~schmidt/PDF/reactor-siemens.pdf" target="_blank">Reactor<br>
+pattern</a> description by Douglas C. Schmidt (PDF)</li>
+<li><a href="http://www.aw-bc.com/catalog/academic/product?ISBN=0131411551" target="_blank">Unix<br>
+Network Programming: The Sockets Networking API</a> gives a good<br>
+overview about network programming in general, and gives a good<br>
+impression what happens behind the Java I/O operations on the<br>
+operating-system level.</li>
+<li><a href="http://sourceforge.net/projects/xsocket" target="_blank">xSocket</a> is a<br>
+LGPL NIO-based library to build network applications. Most example<br>
+code of this article has been written based on xSocket.</li>
+</ul>
+<p><csinclude record="au/{cs.r.id_author}" template="short_bio.view"></csinclude></p>
+<div class="pad3x0">
+<table border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#000000">
+<tbody><tr>
+<td><img src="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/a.gif" <br="">
+width="1" height="1" border="0" alt=" " /&gt;</td>
+</tr>
+</tbody></table>
+</div>
+
+		<div id="author-info">
+			<a href="http://today.java.net/pub/au/542">Gregor Roth</a> works as a software architect at United Internet group, a leading European Internet Service Provider to which GMX, 1&amp;1, and Web.de belong. His areas of interest include software and system architecture, enterprise architecture management, object-oriented design, distributed computing, and development methodologies.
+		</div>
+	  
+  
+<!--   -->
+
+<!--  <div class="links">&raquo; </div> -->
+
+    <div class="taxonomy">Related Topics &gt;&gt;
+        <a href="http://today.java.net/articles/topic/20">Programming</a> &nbsp; |&nbsp; &nbsp;    </div>
+        <div class="node-links"><span class="label" style="font-weight: bold; margin-right: 0.5em; float: left;">Article Links &gt;&gt;</span>
+    <ul class="links"><li class="comment_forbidden first"><span><a href="http://today.java.net/user/login?destination=comment%2Freply%2F219736%23comment-form">Login</a> or <a href="http://today.java.net/user/register?destination=comment%2Freply%2F219736%23comment-form">register</a> to post comments</span></li>
+<li class="print_html"><a href="http://today.java.net/print/219736" title="Display a printer-friendly version of this page." class="print-page" rel="nofollow">Printer-friendly version</a></li>
+<li class="sharethis_link"><span id="sharethis_1"><a class="stbutton stico_default" title="ShareThis via email, AIM, social bookmarking and networking sites, etc." href="javascript:void(0)" st_page="home"><span class="stbuttontext" st_page="home">ShareThis</span></a></span></li>
+<li class="statistics_counter last"><span>29303 reads</span></li>
+</ul>
+                  </div>
+  
+</div> <!-- /article -->
+          </div>
+
+        </div> <!-- /main-content -->
+
+          <!--  Begin SiteCatalyst code  -->
+  <script type="text/javascript" defer="" async="" src="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/piwik.js"></script><script language="JavaScript" src="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/s_code_remote.js"></script><script type="text/javascript" src="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/metrics_group1.js"></script>
+  <!--  End SiteCatalyst code  -->
+      </div></div> <!-- /content-column -->
+
+              <div id="sidebar-first" class="sidebar">
+<div id="block-menu-menu-get-involved" class="block">
+  <div class="block-inner">
+
+          <h2>Get Involved</h2>
+    
+    <div class="content"><ul class="menu">
+ <li class="leaf first"><a href="http://today.java.net/about-javanet" title="About java.net">About Java.net</a></li>
+<li class="leaf"><a href="http://java.net/projects/adoptajsr/pages/Home" title="Adopt">Adopt a JSR</a></li>
+<li class="leaf last"><a href="http://today.java.net/create-project" title="Create a Project">Create a Project</a></li>
+ </ul>
+</div>
+
+    
+  </div>
+</div> <!-- /block -->
+<div id="block-menu-menu-get-informed" class="block">
+  <div class="block-inner">
+
+          <h2>Get Informed</h2>
+    
+    <div class="content"><ul class="menu">
+ <li class="leaf first"><a href="http://today.java.net/articles" title="">Articles</a></li>
+<li class="leaf"><a href="http://today.java.net/blogfront" title="">Blogs</a></li>
+<li class="leaf"><a href="http://today.java.net/events" title="">Events</a></li>
+<li class="leaf"><a href="http://www.oracle.com/technetwork/java/javamagazine/index.html?origref=http://java.net/projects/java-magazine" title="Subscribe to Java Magazine" target="_blank">Java Magazine</a></li>
+<li class="leaf last"><a href="http://education.oracle.com/pls/web_prod-plq-dad/ou_product_category.getFamilyPage?p_family_id=48&intcmp=WWOU11042412MPP012C010" title="Java Training and Certification at Oracle University" target="_blank">Oracle University</a></li>
+ </ul>
+</div>
+
+    
+  </div>
+</div> <!-- /block -->
+      </div> <!-- /sidebar-first -->
+      
+      
+    </div></div> <!-- /columns -->
+
+          <div id="tertiary-content"><div id="block-menu-menu-footer-menu" class="block">
+  <div class="block-inner">
+
+    
+    <div class="content"><ul class="menu">
+ <li class="leaf first"><a href="http://today.java.net/contact" title="">Feedback</a></li>
+<li class="leaf"><a href="http://today.java.net/javanet-faq" title="">FAQ</a></li>
+<li class="leaf"><a href="http://today.java.net/javanet-web-site-terms-use" title="">Terms of Use</a></li>
+<li class="leaf"><a href="http://www.oracle.com/us/legal/privacy/index.html" title="" target="_blank">Privacy</a></li>
+<li class="leaf last"><a href="http://www.oracle.com/us/legal/third-party-trademarks/index.html" title="" target="_blank">Trademarks</a></li>
+ </ul>
+</div>
+
+    
+  </div>
+</div> <!-- /block -->
+</div> <!-- /tertiary-content -->
+    
+          <div id="footer">
+
+                  <div id="footer-region"><div id="block-block-27" class="block">
+  <div class="block-inner">
+
+    
+    <div class="content"><div style="width: 59%; float: left;">
+<p>Your use of this web site or any of its content or software indicates your agreement to be bound by these <a href="http://today.java.net/javanet-web-site-terms-use">Terms of Participation</a>.</p>
+<p>Copyright © 2012, Oracle and/or its affiliates. All rights reserved. Oracle and Java are registered trademarks of Oracle and/or its affiliates. Other names may be trademarks of their respective owners.</p>
+</div>
+
+<div style="width: 39%; float: left; text-align: right;">
+<div style="float: right;"><a href="http://www.oracle.com/" target="_blank"><img src="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/oracle.png"></a><a href="http://kenai.com/" target="_blank"><img src="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/kenai.png"></a><a href="http://www.cognisync.com/" target="_blank"><img src="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/cognisync.png"></a><br>
+<div class="powered-by">Powered by Oracle, Project Kenai and Cognisync</div></div>
+</div></div>
+
+    
+  </div>
+</div> <!-- /block -->
+</div> <!-- /footer-region -->
+        
+        
+        
+      </div> <!-- /footer -->
+    
+
+  </div> <!-- /container -->
+  <script type="text/javascript" src="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/js_977ea511cd85603e5e1a64be11bee873.js"></script>
+<script type="text/javascript">
+<!--//--><![CDATA[//><!--
+jQuery.extend(Drupal.settings, { "basePath": "/", "extlink": { "extTarget": "_blank", "extClass": 0, "extSubdomains": 1, "extExclude": "", "extInclude": "", "extAlert": 0, "extAlertText": "This link will take you to an external web site. We are not responsible for their content.", "mailtoClass": 0 }, "fivestar": { "titleUser": "Your rating: ", "titleAverage": "Average: ", "feedbackSavingVote": "Saving your vote...", "feedbackVoteSaved": "Your vote has been saved.", "feedbackDeletingVote": "Deleting your vote...", "feedbackVoteDeleted": "Your vote has been deleted." }, "lightbox2": { "rtl": 0, "file_path": "/(\\w\\w/)sites/default/files", "default_image": "/sites/all/modules/lightbox2/images/brokenimage.jpg", "border_size": 0, "font_color": "000", "box_color": "fff", "top_position": "", "overlay_opacity": "0.8", "overlay_color": "000", "disable_close_click": 1, "resize_sequence": 0, "resize_speed": 400, "fade_in_speed": 400, "slide_down_speed": 600, "use_alt_layout": 1, "disable_resize": 0, "disable_zoom": 0, "force_show_nav": 0, "show_caption": 1, "loop_items": 0, "node_link_text": "View Image Details", "node_link_target": 0, "image_count": "Image !current of !total", "video_count": "Video !current of !total", "page_count": "Page !current of !total", "lite_press_x_close": "press \x3ca href=\"#\" onclick=\"hideLightbox(); return FALSE;\"\x3e\x3ckbd\x3ex\x3c/kbd\x3e\x3c/a\x3e to close", "download_link_text": "", "enable_login": false, "enable_contact": false, "keys_close": "c x 27", "keys_previous": "p 37", "keys_next": "n 39", "keys_zoom": "z", "keys_play_pause": "32", "display_image_size": "original", "image_node_sizes": "()", "trigger_lightbox_classes": "", "trigger_lightbox_group_classes": "", "trigger_slideshow_classes": "", "trigger_lightframe_classes": "", "trigger_lightframe_group_classes": "", "custom_class_handler": 0, "custom_trigger_classes": "", "disable_for_gallery_lists": true, "disable_for_acidfree_gallery_lists": true, "enable_acidfree_videos": true, "slideshow_interval": 5000, "slideshow_automatic_start": true, "slideshow_automatic_exit": true, "show_play_pause": true, "pause_on_next_click": false, "pause_on_previous_click": true, "loop_slides": false, "iframe_width": 900, "iframe_height": 700, "iframe_border": 1, "enable_video": 0 }, "prettify": { "linenums": false, "match": ".content", "nocode": "no-code", "custom": [  ], "markup": { "code": true, "pre": true, "precode": true } }, "custom_search": { "form_target": "_self", "solr": 0 } });
+//--><!]]>
+</script>
+    <!--  Begin SiteCatalyst code  -->
+<script language="JavaScript">
+<!--
+var s_channel="article";
+//--></script>
+<!--  End SiteCatalyst code  -->
+  <script type="text/javascript">
+<!--//--><![CDATA[//><!--
+var _paq = _paq || [];(function(){var u=(("https:" == document.location.protocol) ? "" : "http://piwik.cognihosting.com/");_paq.push(["setSiteId", "1"]);_paq.push(["setTrackerUrl", u+"piwik.php"]);_paq.push(["setDoNotTrack", 1]);_paq.push(["setCookieDomain", ".java.net"]);_paq.push(["trackPageView"]);_paq.push(["enableLinkTracking"]);var d=document,g=d.createElement("script"),s=d.getElementsByTagName("script")[0];g.type="text/javascript";g.defer=true;g.async=true;g.src=u+"piwik.js";s.parentNode.insertBefore(g,s);})();
+//--><!]]>
+</script>
+
+<!-- 192.168.8.57 -->
+
+
+
+<div id="lightbox2-overlay" style="display: none;"></div>      <div id="lightbox" style="display: none;" class="lightbox2-alt-layout">        <div id="outerImageContainer" style="background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);"><div id="modalContainer" style="display: none; padding: 0px;"></div><div id="frameContainer" style="display: none; padding: 0px;"></div><div id="imageContainer" style="display: none; padding: 0px;"><img id="lightboxImage" alt=""></div><div id="loading"><a href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#" id="loadingLink"></a></div><div id="bottomNav"><a id="bottomNavClose" title="Close" href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#" style="background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);"></a><a id="bottomNavZoom" href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#" style="bottom: 0px; right: 0px;"></a><a id="bottomNavZoomOut" href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#" style="bottom: 0px; right: 0px;"></a></div></div>        <div id="imageDataContainer" class="clearfix" style="background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);">          <div id="imageData"><div id="hoverNav"><a id="prevLink" title="Previous" href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#" style="padding-top: 0px;"></a><a id="nextLink" title="Next" href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#" style="padding-top: 0px;"></a></div><div id="imageDetails"><span id="caption"></span><span id="numberDisplay"></span><a id="lightshowPause" title="Pause Slideshow" href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#" style="display: none;"></a><a id="lightshowPlay" title="Play Slideshow" href="http://today.java.net/pub/a/today/2007/02/13/architecture-of-highly-scalable-nio-server.html#" style="display: none;"></a></div></div>        </div>      </div><iframe id="stSegmentFrame" name="stSegmentFrame" src="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/getSegment.html" frameborder="0" scrolling="no" width="0px" height="0px" style="display:none;"></iframe><div id="stwrapper" class="stwrapper" style="visibility: hidden; top: -999px; left: -999px;"><div class="stclose"></div><iframe allowtransparency="true" id="stframe" class="stframe" name="stframe" frameborder="0" scrolling="no" width="350px" height="450px" style="top: 0px; left: 0px;" src="./Architecture of a Highly Scalable NIO-Based Server   Java.net_files/index.8a209f59f7a60ccb8e061132ad2a4df4.html"></iframe></div></body></html>

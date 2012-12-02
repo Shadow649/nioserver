@@ -1,0 +1,16 @@
+body
+{
+	color: #000;
+	font-family: arial, helvetica, verdana, tahoma, sans-serif;
+	font-size: 32px;
+	margin: 0em;
+	padding: 0em;
+	background-color: #FFFFFF;
+}
+ul.square 
+{
+	list-style-type:square;
+	font-size: 20px;
+
+}
+
