@@ -5,6 +5,7 @@ import java.util.Properties;
 
 import com.shadow649soft.server.api.application.ApplicationContext;
 import com.shadow649soft.server.api.configuration.ApplicationConfigurator;
+import com.shadow649soft.server.api.configuration.MutableServerConfiguration;
 import com.shadow649soft.server.api.configuration.ServerConfiguration;
 import com.shadow649soft.server.api.http.configuration.HttpConfiguration;
 import com.shadow649soft.server.api.http.configuration.MutableHttpConfiguration;
@@ -20,20 +21,36 @@ import com.shadow649soft.server.impl.application.http.HttpApplicationContext;
  */
 public class DefaultHttpConfiguration {
     
-    public static ServerConfiguration defaultConfiguration = new ServerConfiguration() {
+    public static MutableServerConfiguration defaultConfiguration = new MutableServerConfiguration() {
+        private int threadNumber = 8;
+        private int port = 8080;
         
         public int getThreadNumber() {
-            return 8;
+            return threadNumber;
         }
         
         public int getPort() {
-            return 8080;
+            return port;
         }
 
         public ApplicationContext getApplication(ApplicationConfigurator configurator) {
             return configurator.getApplicationContext();
         }
-
+        
+        @Override
+        public void setThreads(int threadNumber) {
+            this.threadNumber= threadNumber;
+        }
+        
+        @Override
+        public void setRootPath(String serverRootPath) {
+            //TODO
+        }
+        
+        @Override
+        public void setPort(int port) {
+            this.port = port;
+        }
     };
     
     public static ApplicationConfigurator defaultApplConfigurator = new ApplicationConfigurator() {
