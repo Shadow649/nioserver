@@ -22,7 +22,7 @@ public class EchoApplicationContext extends ApplicationContextImpl implements Ap
     }
 
     @Override
-    public RemovalListener<? super SelectionKey, ? super Object> getExpiresAction() {
+    public RemovalListener<? super SelectionKey, ? super Object> expireAction() {
         RemovalListener<SelectionKey, Object> asd = new RemovalListener<SelectionKey, Object>() {
 
             @Override

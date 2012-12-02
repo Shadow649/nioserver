@@ -1,7 +1,5 @@
 package com.shadow649soft.echoserver;
 
-import static org.junit.Assert.*;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,13 +7,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import javax.swing.plaf.SliderUI;
-
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.shadow649soft.server.api.application.ApplicationContext;
 import com.shadow649soft.server.api.configuration.ApplicationConfigurator;

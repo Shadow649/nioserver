@@ -40,7 +40,7 @@ public class EchoRequestParser implements RequestParser {
     }
 
     public ServerRequest<String> getRequest() {
-        return new EchoRequest(request.toString().replace(endRequest,""));
+        return new EchoRequest(request.toString(),endRequest);
     }
 
     public void parseData() {

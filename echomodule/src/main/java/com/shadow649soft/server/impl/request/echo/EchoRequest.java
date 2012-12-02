@@ -9,10 +9,14 @@ public class EchoRequest extends AbstractRequest<String> implements ServerReques
     
     private String message;
     
-    public EchoRequest(String message) {
+    public EchoRequest(String message, String endRequest) {
         this.id = UUID.randomUUID();
-        this.status = Status.Dummy;
-        this.message = message;
+        if(message.contains(endRequest)) {
+            this.status = Status.Accepted;
+        } else {
+            this.status = Status.Dummy;
+        }
+        this.message = message.replace(endRequest, "");
     }
 
     public String getMessage() {
